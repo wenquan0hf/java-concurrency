@@ -2,7 +2,7 @@
 
 ## 简单使用 Lock 锁
 
-Java 5 中引入了新的锁机制——java.util.concurrent.locks 中的显式的互斥锁：Lock 接口，它提供了比synchronized 更加广泛的锁定操作。Lock 接口有 3 个实现它的类：ReentrantLock、ReetrantReadWriteLock.ReadLock 和 ReetrantReadWriteLock.WriteLock，即重入锁、读锁和写锁。lock 必须被显式地创建、锁定和释放，为了可以使用更多的功能，一般用 ReentrantLock 为其实例化。为了保证锁最终一定会被释放（可能会有异常发生），要把互斥区放在 try 语句块内，并在 finally 语句块中释放锁，尤其当有 return 语句时，return 语句必须放在 try 字句中，以确保 unlock（）不会过早发生，从而将数据暴露给第二个任务。因此，采用 lock 加锁和释放锁的一般形式如下：
+Java 5 中引入了新的锁机制——java.util.concurrent.locks 中的显式的互斥锁：Lock 接口，它提供了比synchronized 更加广泛的锁定操作。Lock 接口有 3 个实现它的类：ReentrantLock、ReetrantReadWriteLock.ReadLock 和 ReetrantReadWriteLock.WriteLock，即重入锁、读锁和写锁。lock 必须被显式地创建、锁定和释放，为了可以使用更多的功能，一般用 ReentrantLock 为其实例化。为了保证锁最终一定会被释放（可能会有异常发生），要把互斥区放在 try 语句块内，并在 finally 语句块中释放锁，尤其当有 return 语句时，return 语句必须放在 try 字句中，以确保 unlock()不会过早发生，从而将数据暴露给第二个任务。因此，采用 lock 加锁和释放锁的一般形式如下：
 
 ```
 Lock lock = new ReentrantLock();//默认使用非公平锁，如果要使用公平锁，需要传入参数true  
@@ -30,7 +30,7 @@ try {
 
 在乐观的并发策略中，需要操作和冲突检测这两个步骤具备原子性，它靠硬件指令来保证，这里用的是 CAS 操作（Compare and Swap）。JDK1.5 之后，Java 程序才可以使用CAS操作。我们可以进一步研究 ReentrantLock 的源代码，会发现其中比较重要的获得锁的一个方法是 compareAndSetState，这里其实就是调用的 CPU 提供的特殊指令。现代的 CPU 提供了指令，可以自动更新共享数据，而且能够检测到其他线程的干扰，而 compareAndSet() 就用这些代替了锁定。这个算法称作非阻塞算法，意思是一个线程的失败或者挂起不应该影响其他线程的失败或挂起。
 
-Java 5 中引入了注入 AutomicInteger、AutomicLong、AutomicReference 等特殊的原子性变量类，它们提供的如：compareAndSet（）、incrementAndSet（）和getAndIncrement（）等方法都使用了 CAS 操作。因此，它们都是由硬件指令来保证的原子方法。
+Java 5 中引入了注入 AutomicInteger、AutomicLong、AutomicReference 等特殊的原子性变量类，它们提供的如：compareAndSet()、incrementAndSet()和getAndIncrement()等方法都使用了 CAS 操作。因此，它们都是由硬件指令来保证的原子方法。
 
 ### 用途比较
 
@@ -38,7 +38,7 @@ Java 5 中引入了注入 AutomicInteger、AutomicLong、AutomicReference 等特
 
 - 等待可中断：当持有锁的线程长期不释放锁时，正在等待的线程可以选择放弃等待，改为处理其他事情，它对处理执行时间非常上的同步块很有帮助。而在等待由 synchronized 产生的互斥锁时，会一直阻塞，是不能被中断的。
 - 可实现公平锁：多个线程在等待同一个锁时，必须按照申请锁的时间顺序排队等待，而非公平锁则不保证这点，在锁释放时，任何一个等待锁的线程都有机会获得锁。synchronized 中的锁时非公平锁，ReentrantLock 默认情况下也是非公平锁，但可以通过构造方法 ReentrantLock（ture）来要求使用公平锁。
-- 锁可以绑定多个条件：ReentrantLock 对象可以同时绑定多个 Condition 对象（名曰：条件变量或条件队列），而在 synchronized 中，锁对象的 wait（）和 notify（）或 notifyAll（）方法可以实现一个隐含条件，但如果要和多于一个的条件关联的时候，就不得不额外地添加一个锁，而 ReentrantLock 则无需这么做，只需要多次调用 newCondition（）方法即可。而且我们还可以通过绑定 Condition 对象来判断当前线程通知的是哪些线程（即与 Condition 对象绑定在一起的其他线程）。
+- 锁可以绑定多个条件：ReentrantLock 对象可以同时绑定多个 Condition 对象（名曰：条件变量或条件队列），而在 synchronized 中，锁对象的 wait()和 notify()或 notifyAll()方法可以实现一个隐含条件，但如果要和多于一个的条件关联的时候，就不得不额外地添加一个锁，而 ReentrantLock 则无需这么做，只需要多次调用 newCondition()方法即可。而且我们还可以通过绑定 Condition 对象来判断当前线程通知的是哪些线程（即与 Condition 对象绑定在一起的其他线程）。
 
 ## 可中断锁
 
@@ -278,7 +278,7 @@ class Writer2 extends Thread {
 
 ## 条件变量实现线程间协作
 
-在**生产者——消费者模型**一文中，我们用 synchronized 实现互斥，并配合使用 Object 对象的 wait（）和 notify（）或 notifyAll（）方法来实现线程间协作。Java 5 之后，我们可以用 Reentrantlock 锁配合 Condition 对象上的 await（）和 signal（）或 signalAll（）方法来实现线程间协作。在 ReentrantLock 对象上 newCondition（）可以得到一个 Condition 对象，可以通过在 Condition 上调用 await（）方法来挂起一个任务（线程），通过在 Condition 上调用 signal（）来通知任务，从而唤醒一个任务，或者调用 signalAll（）来唤醒所有在这个 Condition 上被其自身挂起的任务。另外，如果使用了公平锁，signalAll（）的与 Condition 关联的所有任务将以 FIFO 队列的形式获取锁，如果没有使用公平锁，则获取锁的任务是随机的，这样我们便可以更好地控制处在 await 状态的任务获取锁的顺序。与 notifyAll（）相比，signalAll（）是更安全的方式。另外，它可以指定唤醒与自身 Condition 对象绑定在一起的任务。
+在**生产者——消费者模型**一文中，我们用 synchronized 实现互斥，并配合使用 Object 对象的 wait（）和 notify()或 notifyAll()方法来实现线程间协作。Java 5 之后，我们可以用 Reentrantlock 锁配合 Condition 对象上的 await()和 signal()或 signalAll()方法来实现线程间协作。在 ReentrantLock 对象上 newCondition()可以得到一个 Condition 对象，可以通过在 Condition 上调用 await()方法来挂起一个任务（线程），通过在 Condition 上调用 signal()来通知任务，从而唤醒一个任务，或者调用 signalAll()来唤醒所有在这个 Condition 上被其自身挂起的任务。另外，如果使用了公平锁，signalAll()的与 Condition 关联的所有任务将以 FIFO 队列的形式获取锁，如果没有使用公平锁，则获取锁的任务是随机的，这样我们便可以更好地控制处在 await 状态的任务获取锁的顺序。与 notifyAll()相比，signalAll()是更安全的方式。另外，它可以指定唤醒与自身 Condition 对象绑定在一起的任务。
 
 下面将生产者——消费者模型一文中的代码改为用条件变量实现，如下：
 
@@ -403,7 +403,7 @@ public class ThreadCaseDemo{
 姓名--2 --> 内容--2
 ```
 
-从以上并不能看出用条件变量的 await（）、signal（）、signalAll（）方法比用 Object 对象的 wait（）、notify（）、notifyAll（）方法实现线程间协作有多少优点，但它在处理更复杂的多线程问题时，会有明显的优势。所以，Lock 和 Condition 对象只有在更加困难的多线程问题中才是必须的。
+从以上并不能看出用条件变量的 await()、signal()、signalAll()方法比用 Object 对象的 wait()、notify()、notifyAll()方法实现线程间协作有多少优点，但它在处理更复杂的多线程问题时，会有明显的优势。所以，Lock 和 Condition 对象只有在更加困难的多线程问题中才是必须的。
 
 ## 读写锁
 
