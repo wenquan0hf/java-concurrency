@@ -103,9 +103,9 @@ public class EarlyNotify extends Object {
 
 ![](images/notifyall.jpg)
 
-分析：首先启动 threadA1，threadA1 在 removeItem（）中调用 wait（），从而释放 list 上的对象锁。再过 500ms，启动 threadA2，threadA2 调用 removeItem（），获取 list 上的对象锁，也发现列表为空，从而在 wait（）方法处阻塞，释放 list 上的对象锁。再过 500ms 后，启动 threadB，并调用 addItem，获得 list 上的对象锁，并在 list 中添加一个元素，同时用 notifyAll 通知所有线程。
+分析：首先启动 threadA1，threadA1 在 removeItem()中调用 wait()，从而释放 list 上的对象锁。再过 500ms，启动 threadA2，threadA2 调用 removeItem()，获取 list 上的对象锁，也发现列表为空，从而在 wait()方法处阻塞，释放 list 上的对象锁。再过 500ms 后，启动 threadB，并调用 addItem，获得 list 上的对象锁，并在 list 中添加一个元素，同时用 notifyAll 通知所有线程。
 
-threadA1 和 threadA2 都从 wait（）返回，等待获取 list 对象上的对象锁，并试图从列表中删除添加的元素，这就会产生麻烦，只有其中一个操作能成功。假设 threadA1 获取了 list 上的对象锁，并删除元素成功，在退出 synchronized 代码块时，它便会释放 list 上的对象锁，此时 threadA2 便会获取 list 上的对象锁，会继续删除 list 中的元素，但是 list 已经为空了，这便会抛出 IndexOutOfBoundsException。
+threadA1 和 threadA2 都从 wait()返回，等待获取 list 对象上的对象锁，并试图从列表中删除添加的元素，这就会产生麻烦，只有其中一个操作能成功。假设 threadA1 获取了 list 上的对象锁，并删除元素成功，在退出 synchronized 代码块时，它便会释放 list 上的对象锁，此时 threadA2 便会获取 list 上的对象锁，会继续删除 list 中的元素，但是 list 已经为空了，这便会抛出 IndexOutOfBoundsException。
 
 要避免以上问题只需将 wait 外围的 if 语句改为 while 循环即可，这样当 list 为空时，线程便会继续等待，而不会继续去执行删除 list 中元素的代码。
 
@@ -113,7 +113,7 @@ threadA1 和 threadA2 都从 wait（）返回，等待获取 list 对象上的�
 
 ![](images/niotifyall1.jpg)
 
-总结：在使用线程的等待/通知机制时，一般都要在 while 循环中调用 wait（）方法，满足条件时，才让 while循环退出，这样一般也要配合使用一个 boolean 变量（或其他能判断真假的条件，如本文中的 list.isEmpty()），满足 while 循环的条件时，进入 while 循环，执行 wait（）方法，不满足 while 循环的条件时，跳出循环，执行后面的代码。
+总结：在使用线程的等待/通知机制时，一般都要在 while 循环中调用 wait()方法，满足条件时，才让 while循环退出，这样一般也要配合使用一个 boolean 变量（或其他能判断真假的条件，如本文中的 list.isEmpty()），满足 while 循环的条件时，进入 while 循环，执行 wait()方法，不满足 while 循环的条件时，跳出循环，执行后面的代码。
 
 
 
