@@ -54,4 +54,4 @@ public class SafeCollectionIteration extends Object {
 }  
 ```
 
-这里需要注意的是：在 Java 语言中，大部分的线程安全类都是相对线程安全的，它能保证对这个对象单独的操作时线程安全的，我们在调用的时候不需要额外的保障措施，但是对于一些特定的连续调用，就可能需要在调用端使用额外的同步手段来保证调用的正确性。例如 Vector、HashTable、Collections的synchronizedXxxx（）方法包装的集合等。
+这里需要注意的是：在 Java 语言中，大部分的线程安全类都是相对线程安全的，它能保证对这个对象单独的操作时线程安全的，我们在调用的时候不需要额外的保障措施，但是对于一些特定的连续调用，就可能需要在调用端使用额外的同步手段来保证调用的正确性。例如 Vector、HashTable、Collections的synchronizedXxxx()方法包装的集合等。
