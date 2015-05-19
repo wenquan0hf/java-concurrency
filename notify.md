@@ -96,7 +96,7 @@ public class MissedNotify extends Object {
 
 ![](images/notifyresult.jpg)
 
-分析：由于 threadB 在执行 mn.proceed（）之前只休眠了 500ms，而 threadA 在执行 mn.waitToProceed（）之前休眠了 1000ms，因此，threadB 会先苏醒，继而执行 mn.proceed（），获取到 proceedLock 的对象锁，继而执行其中的 notifyAll（），当退出 proceed（）方法中的 synchronized 代码块时，threadA 才有机会获取 proceedLock 的对象锁，继而执行其中的 wait（）方法，但此时 notifyAll（）方法已经执行完毕，threadA 便漏掉了 threadB 的通知，便会阻塞下去。后面主线程休眠 10 秒后，尝试中断 threadA 线程，使其抛出 InterruptedException。
+分析：由于 threadB 在执行 mn.proceed()之前只休眠了 500ms，而 threadA 在执行 mn.waitToProceed()之前休眠了 1000ms，因此，threadB 会先苏醒，继而执行 mn.proceed()，获取到 proceedLock 的对象锁，继而执行其中的 notifyAll()，当退出 proceed()方法中的 synchronized 代码块时，threadA 才有机会获取 proceedLock 的对象锁，继而执行其中的 wait()方法，但此时 notifyAll()方法已经执行完毕，threadA 便漏掉了 threadB 的通知，便会阻塞下去。后面主线程休眠 10 秒后，尝试中断 threadA 线程，使其抛出 InterruptedException。
 
 ## 修正后的代码
 
