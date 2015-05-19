@@ -79,9 +79,9 @@ public class DeprecatedSuspendResume extends Object implements Runnable{
 
 ![](images/result6.png)
 
-从 areValuesEqual（）返回的值有时为 true，有时为 false。以上代码中，在设置 firstVal 之后，但在设置 secondVal 之前，挂起新线程会产生麻烦，此时输出的结果会为 false（情况 1），这段时间不适宜挂起线程，但因为线程不能控制何时调用它的 suspend 方法，所以这种情况是不可避免的。
+从 areValuesEqual()返回的值有时为 true，有时为 false。以上代码中，在设置 firstVal 之后，但在设置 secondVal 之前，挂起新线程会产生麻烦，此时输出的结果会为 false（情况 1），这段时间不适宜挂起线程，但因为线程不能控制何时调用它的 suspend 方法，所以这种情况是不可避免的。
 
-当然，即使线程不被挂起（注释掉挂起和恢复线程的两行代码），如果在 main 线程中执行 asr.areValuesEqual（）进行比较时，恰逢 stepOne 操作执行完，而 stepTwo 操作还没执行，那么得到的结果同样可能是 false（情况 2）。
+当然，即使线程不被挂起（注释掉挂起和恢复线程的两行代码），如果在 main 线程中执行 asr.areValuesEqual()进行比较时，恰逢 stepOne 操作执行完，而 stepTwo 操作还没执行，那么得到的结果同样可能是 false（情况 2）。
 
 下面我们给出不用上述两个方法来实现线程挂起和恢复的策略——设置标志位。通过该方法实现线程的挂起和恢复有一个很好的地方，就是可以在线程的指定位置实现线程的挂起和恢复，而不用担心其不确定性。
 
@@ -203,9 +203,9 @@ public class AlternateSuspendResume extends Object implements Runnable {
 
 ![](images/result7.png)
 
-由结果可以看出，输出的所有结果均为 true。首先，针对情况 1（线程挂起的位置不确定），这里确定了线程挂起的位置，不会出现线程在 stepOne 操作和 stepTwo 操作之间挂起的情况；针对情况 2（main 线程中执行asr.areValuesEqual（）进行比较时，恰逢 stepOne 操作执行完，而 stepTwo 操作还没执行），在发出挂起请求后，还没有执行 asr.areValuesEqual（）操作前，让 main 线程休眠 450ms（>300ms），如果挂起请求发出时，新线程正执行到或即将执行到 stepOne 操作（如果在其前面的话，就会响应挂起请求，从而挂起线程），那么在 stepTwo 操作执行前，main 线程的休眠还没结束，从而 main 线程休眠结束后执行asr.areValuesEqual（）操作进行比较时，stepTwo 操作已经执行完，因此也不会出现输出结果为 false 的情况。
+由结果可以看出，输出的所有结果均为 true。首先，针对情况 1（线程挂起的位置不确定），这里确定了线程挂起的位置，不会出现线程在 stepOne 操作和 stepTwo 操作之间挂起的情况；针对情况 2（main 线程中执行asr.areValuesEqual()进行比较时，恰逢 stepOne 操作执行完，而 stepTwo 操作还没执行），在发出挂起请求后，还没有执行 asr.areValuesEqual()操作前，让 main 线程休眠 450ms（>300ms），如果挂起请求发出时，新线程正执行到或即将执行到 stepOne 操作（如果在其前面的话，就会响应挂起请求，从而挂起线程），那么在 stepTwo 操作执行前，main 线程的休眠还没结束，从而 main 线程休眠结束后执行 asr.areValuesEqualv操作进行比较时，stepTwo 操作已经执行完，因此也不会出现输出结果为 false 的情况。
 
-可以将 ars.suspendRequest（）代码后的 sleep 代码去掉，或将休眠时间改为 200（明显小于 300 即可）后，查看执行结果，会发现结果中依然会有出现 false 的情况。如下图所示：
+可以将 ars.suspendRequest()代码后的 sleep 代码去掉，或将休眠时间改为 200（明显小于 300 即可）后，查看执行结果，会发现结果中依然会有出现 false 的情况。如下图所示：
 
 ![](images/result8.png)
 
@@ -213,7 +213,7 @@ public class AlternateSuspendResume extends Object implements Runnable {
 
 ## 终止线程
 
-当调用 Thread 的 start（）方法，执行完 run（）方法后，或在 run（）方法中 return，线程便会自然消亡。另外 Thread API 中包含了一个 stop（）方法，可以突然终止线程。但它在 JDK1.2 后便被淘汰了，因为它可能导致数据对象的崩溃。一个问题是，当线程终止时，很少有机会执行清理工作；另一个问题是，当在某个线程上调用 stop（）方法时，线程释放它当前持有的所有锁，持有这些锁必定有某种合适的理由——也许是阻止其他线程访问尚未处于一致性状态的数据，突然释放锁可能使某些对象中的数据处于不一致状态，而且不会出现数据可能崩溃的任何警告。
+当调用 Thread 的 start()方法，执行完 run()方法后，或在 run()方法中 return，线程便会自然消亡。另外 Thread API 中包含了一个 stop()方法，可以突然终止线程。但它在 JDK1.2 后便被淘汰了，因为它可能导致数据对象的崩溃。一个问题是，当线程终止时，很少有机会执行清理工作；另一个问题是，当在某个线程上调用 stop()方法时，线程释放它当前持有的所有锁，持有这些锁必定有某种合适的理由——也许是阻止其他线程访问尚未处于一致性状态的数据，突然释放锁可能使某些对象中的数据处于不一致状态，而且不会出现数据可能崩溃的任何警告。
 
 终止线程的替代方法：同样是使用标志位，通过控制标志位来终止线程。
 
