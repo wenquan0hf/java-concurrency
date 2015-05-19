@@ -22,13 +22,13 @@ Java 语言中有一个“先行发生”（happen—before）的规则，它是
 
 3. volatile变量规则：对一个 volatile 变量的写操作 happen—before 后面对该变量的读操作。
 
-4. 线程启动规则：Thread 对象的 start（）方法 happen—before 此线程的每一个动作。
+4. 线程启动规则：Thread 对象的 start()方法 happen—before 此线程的每一个动作。
 
-5. 线程终止规则：线程的所有操作都 happen—before 对此线程的终止检测，可以通过 Thread.join（）方法结束 Thread.isAlive（）的返回值等手段检测到线程已经终止执行。
+5. 线程终止规则：线程的所有操作都 happen—before 对此线程的终止检测，可以通过 Thread.join()方法结束 Thread.isAlive()的返回值等手段检测到线程已经终止执行。
 
-6. 线程中断规则：对线程 interrupt（）方法的调用 happen—before 发生于被中断线程的代码检测到中断时事件的发生。
+6. 线程中断规则：对线程 interrupt()方法的调用 happen—before 发生于被中断线程的代码检测到中断时事件的发生。
 
-7. 对象终结规则：一个对象的初始化完成（构造函数执行结束）happen—before 它的 finalize（）方法的开始。
+7. 对象终结规则：一个对象的初始化完成（构造函数执行结束）happen—before 它的 finalize()方法的开始。
 
 8. 传递性：如果操作 A happen—before 操作 B，操作 B happen—before 操作 C，那么可以得出 A happen—before 操作 C。
 
@@ -51,13 +51,13 @@ public void set(int value){
 }
 ```
 
-假设存在线程 A 和线程 B，线程 A 先（时间上的先）调用了 setValue（3）操作，然后（时间上的后）线程B调用了同一对象的 getValue（）方法，那么线程B得到的返回值一定是3吗？
+假设存在线程 A 和线程 B，线程 A 先（时间上的先）调用了 setValue(3)操作，然后（时间上的后）线程B调用了同一对象的 getValue()方法，那么线程B得到的返回值一定是3吗？
 
-对照以上八条 happen—before 规则，发现没有一条规则适合于这里的 value 变量，从而我们可以判定线程 A 中的 setValue（3）操作与线程 B 中的 getValue（）操作不存在 happen—before 关系。因此，尽管线程 A 的 setValue（3）在操作时间上先于操作 B 的 getvalue（），但无法保证线程 B 的 getValue（）操作一定观察到了线程 A 的 setValue（3）操作所产生的结果，也即是 getValue（）的返回值不一定为 3（有可能是之前 setValue 所设置的值）。这里的操作不是线程安全的。
+对照以上八条 happen—before 规则，发现没有一条规则适合于这里的 value 变量，从而我们可以判定线程 A 中的 setValue(3)操作与线程 B 中的 getValue()操作不存在 happen—before 关系。因此，尽管线程 A 的 setValue(3)在操作时间上先于操作 B 的 getvalue()，但无法保证线程 B 的 getValue()操作一定观察到了线程 A 的 setValue(3)操作所产生的结果，也即是 getValue()的返回值不一定为 3（有可能是之前 setValue 所设置的值）。这里的操作不是线程安全的。
 
 因此，”一个操作时间上先发生于另一个操作“并不代表”一个操作 happen—before 另一个操作“。
 
-解决方法：可以将 setValue（int）方法和 getValue（）方法均定义为 synchronized 方法，也可以把 value 定义为 volatile 变量（value 的修改并不依赖 value 的原值，符合 volatile 的使用场景），分别对应 happen—before 规则的第 2 和第 3 条。注意，只将 setValue（int）方法和 getvalue（）方法中的一个定义为 synchronized 方法是不行的，必须对同一个变量的所有读写同步，才能保证不读取到陈旧的数据，仅仅同步读或写是不够的 。
+解决方法：可以将 setValue（int）方法和 getValue()方法均定义为 synchronized 方法，也可以把 value 定义为 volatile 变量（value 的修改并不依赖 value 的原值，符合 volatile 的使用场景），分别对应 happen—before 规则的第 2 和第 3 条。注意，只将 setValue（int）方法和 getvalue()方法中的一个定义为 synchronized 方法是不行的，必须对同一个变量的所有读写同步，才能保证不读取到陈旧的数据，仅仅同步读或写是不够的 。
 
 其次来看，操作 A happen—before 操作 B，是否意味着操作 A 在时间上先与操作 B 发生？
 
